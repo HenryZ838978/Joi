@@ -1,0 +1,5 @@
+numpy>=1.24
+torch>=2.0
+transformers>=4.40
+pyyaml>=6.0
+repeng @ git+https://github.com/vgel/repeng.git
