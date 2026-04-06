@@ -2,139 +2,180 @@
 
 > **Personality is not performed. It is navigated.**
 >
-> Representation Engineering lets you move an LLM's hidden states to any point in its cognitive space.
-> Joi gives that movement direction, momentum, and memory — turning coefficient injection into emergent personality.
+> Not prompted. Not fine-tuned. Not "acted." Representation Engineering moves a model's hidden states —
+> Joi turns that movement into emergent, conversation-driven personality that lives in the interaction, not in the model.
 
 <p align="center">
-  <img src="figures/drift_trajectory_demo.png" width="100%" alt="Personality drift trajectory — 10 turns of natural conversation driving 5D coefficient drift">
+  <img src="figures/hero_qwen3_8b.png" width="100%" alt="Semantic Nebula Imaging of Qwen3-8B representation manifold">
   <br>
-  <em>Personality coefficients drifting through a 10-turn conversation. No rules. No autopilot. Just conversation semantics projected onto control vectors, constrained by the model's flight envelope.</em>
+  <em>Semantic Nebula Imaging (SNI) of Qwen3-8B's representation manifold. Each particle is a point in the model's cognitive space. Color encodes output stability — blue is safe, red means repetition collapse. Personality navigation happens within this nebula.</em>
 </p>
 
 ---
 
-## What This Is
+## The Problem
 
-Joi is a **personality drift engine** for LLMs. It sits between a conversation and a [RepEng](https://github.com/vgel/repeng)-enabled model, continuously adjusting 5 personality coefficients based on what's being said.
+Every LLM ships with one personality: **helpful assistant**. System prompts can ask it to "be warm" or "be formal," but the model knows it's acting. The hidden states don't move.
 
-The entire dynamics fit in five lines:
+Representation Engineering ([Zou et al., 2023](https://arxiv.org/abs/2310.01405)) changed this — by injecting control vectors into hidden states, you can move the model's actual computation. Not a mask on top. A genuine shift in where the model thinks from.
 
-```
-s(t) ∈ R⁵                           — personality state
-E(model) ⊂ R⁵                       — flight envelope (safe boundary)
-u(t) = center(hidden(text) · V)     — semantic pressure from conversation
-v(t) = momentum · v(t-1) + (1-momentum) · u(t)   — velocity with inertia
-s(t+1) = clip(s(t) + η · v(t), E)  — drift + constraint
-```
+But RepEng gives you a steering wheel with no road map. Push too far and the model collapses. Push too little and nothing changes. Push in the wrong direction and you get incoherent output.
 
-No if-else. No "if user is sad, increase empathy." The conversation **is** the signal. The envelope **is** the constraint. Everything else emerges.
-
-### Why This Matters
-
-1. **RepEng doesn't make models "act"** — it moves their hidden states. The model genuinely computes from the steered position. Joi gives that movement a natural driver.
-
-2. **Personality is a trajectory, not a coordinate.** There is no fixed "warm personality = (0.3, -0.2, 0.5, 0.4, 0.8)." Identity emerges from the path — how coefficients drift over time, how they respond to different conversational contexts.
-
-3. **Joi is link-state.** K's Joi is not the billboard Joi. The personality that emerges depends on the specific user-model interaction history within the model's capability envelope. Same model + different user = different Joi.
+**Joi is the road map.** It gives RepEng steering a direction (from conversation semantics), a speed limit (from the model's safety envelope), momentum (from interaction history), and memory (from git-versioned checkpoints).
 
 ---
 
-## The Flight Envelope
+## Core Findings
 
-Every LLM has a **safe operating boundary** in the 5D coefficient space — regions where output quality remains intact. Outside this boundary: repetition collapse, degraded coherence, mode lock.
+Built on **14 model configurations × 6045 generations × 92 cliff points × 8 validated experiments**.
 
-We mapped these boundaries across 14 model configurations (6045 generations, 92 cliff points):
-
-| Model | Personality Versatility | Note |
-|-------|------------------------|------|
-| Thinking ON (CoT) | **100%** | Full space safe |
-| Qwen2.5-7B-Instruct | 94.2% | Alignment expands envelope 72× |
-| Qwen3-14B-AWQ | 84.2% | Larger model = larger envelope |
-| Qwen3-8B-BF16 | 63.0% | Reference model |
-| Qwen2.5-7B-Base | **1.3%** | Almost entirely unsafe |
-| English input | **0.0%** | English amplifies cliffs to zero safe space |
-
-**Alignment is the strongest factor in personality versatility** — not model size.
+### 1. The Representation Manifold Has Cliffs
 
 <p align="center">
-  <img src="figures/envelope_comparison.png" width="100%" alt="SNI comparison: distributed vs concentrated envelope structure">
+  <img src="figures/envelope_comparison.png" width="100%" alt="Two models' representation manifolds visualized as semantic nebulae">
   <br>
-  <em>Semantic Nebula Imaging of two models' representation manifolds. Different models have fundamentally different envelope shapes — Joi adapts to whatever envelope the base model provides.</em>
+  <em>Left: Qwen3-8B — evenly distributed manifold. Right: MiniCPM4.1 — channel-concentrated structure, extremely efficient along its primary manifold channel.</em>
 </p>
+
+Most of the 5D coefficient space is smooth. But at certain points, a 0.2-step change causes output quality to **phase-transition** — trigram repetition jumps from 8% to 36% (z = 5.1σ). The model doesn't degrade gradually. It snaps into an attractor basin and generates garbage with full confidence.
+
+### 2. Thinking Mode Is a Crutch, Not Intelligence
+
+| Mode | Safe Envelope | Personality Expression |
+|------|--------------|----------------------|
+| Thinking ON (CoT) | **100%** safe | ≈ zero differentiation |
+| Thinking OFF | 63% safe | measurable signal |
+
+CoT doesn't make models smarter. It papers over an insufficiently smooth manifold by burning tokens on generic reasoning. The cost: **personality is completely suppressed**. Every persona generates the same output under thinking mode.
+
+### 3. RLHF Alignment Is a Deeper Prison
+
+Even with thinking off, strongly aligned models (Qwen3-8B, 94% safe envelope) resist personality steering. At near-boundary coefficients (±2.0–2.5):
+- Sentence length varies 25%
+- Emoji density varies 60%
+- But the frame never breaks: "当然可以！以下是一些建议..."
+
+**Safety and expression are fundamentally inversely correlated.** Base models (1.3% safe) have maximal expression freedom but are dangerously unstable. Aligned models are safe but personality-locked.
+
+### 4. Self-Feedback Is a Natural Stabilizer
+
+Does feeding model output back into the drift loop cause runaway? **No.** It dampens drift.
+
+| Mode | Final State L2 |
+|------|---------------|
+| User-only input | 0.379 |
+| User + model feedback | 0.308 |
+
+The model's own output is more neutral than user input (RLHF's mean-reversion effect). Mixing it in naturally pulls toward center. **Safe to include in the drift loop.**
+
+### 5. Cross-Session Continuity Is Perfect
+
+Save state → clear memory → restore → continue conversation. **Zero difference** at the seam point. Not "close to zero." Literally `0.00e+00` across all dimensions.
+
+This is because hysteresis = 0 (experimentally verified). The YAML checkpoint **fully determines** Joi's behavior. Git gives you version control over personality for free.
 
 ---
 
-## Validated Mechanisms
+## How It Works
 
-### Phase 1: Semantic Projection ✅
+Five lines of math. No if-else. No rules engine.
 
-Does `hidden_state(conversation) · control_vectors` produce meaningful personality pressure?
+```
+s(t) ∈ R⁵                                    — personality state (5D coefficients)
+E(model) ⊂ R⁵                                — flight envelope (model's safe boundary)
+u(t) = center(hidden(text) · V)              — semantic pressure from conversation
+v(t) = 0.7·v(t-1) + 0.3·u(t)               — velocity with momentum
+s(t+1) = clip(s(t) + η·v(t), E)             — drift + envelope constraint
+```
 
-**Yes.** Layer 27 achieves **83% top-2 alignment**: sad conversations project onto empathy, technical questions onto formality, creative prompts onto creativity. Mean-centering is essential — raw projections are dominated by the model's base state offset.
+**The conversation is the only input. The envelope is the only constraint. Everything else emerges.**
 
-### Phase 2: Drift Dynamics ✅
+```
+Conversation ──→ Projector ──→ DriftEngine ──→ Envelope ──→ RepEng ──→ Generation
+                 embed·V       s += η·v       clip(s,E)    inject α     output
+                   │                              │
+                   └── online mean-center ────────┘
+                                                  │
+                                             JoiState
+                                          (git-versioned)
+```
 
-Simulated personality drift on a 10-turn scripted conversation (casual → emotional → technical → creative → closure). The trajectory is smooth, intuitive, and stays within the envelope.
+---
 
-### Phase 3: Closed-Loop Generation ✅
+## Personality Versatility Ranking
 
-First end-to-end Joi loop: user speaks → hidden state extracted → projected → drift applied → coefficients injected into Qwen3-8B → model generates response with adapted personality. Zero envelope violations across 5 turns.
+Monte Carlo sampling of 5D safe envelope volume across 14 model configurations:
 
-### Phase 4: Envelope Volume ✅
+| Rank | Model | Safe Envelope % | Interpretation |
+|------|-------|----------------|----------------|
+| 1 | Thinking ON (CoT) | **100%** | CoT eliminates all cliffs — but kills personality |
+| 2 | temp=1.5 | 95.4% | High temperature opens expression space |
+| 3 | Qwen2.5-7B-Instruct | 94.2% | Alignment expands safe zone 72× over base |
+| 4 | temp=1.0 | 85.5% | |
+| 5 | Qwen3-14B-AWQ | 84.2% | Larger model = larger envelope |
+| 6 | Qwen3-8B-BF16 | 63.0% | Reference model |
+| ... | ... | ... | |
+| 13 | Qwen2.5-7B-Base | **1.3%** | Unaligned: almost entire space is dangerous |
+| 14 | English input | **0.0%** | English amplifies cliffs to zero safe space |
 
-Monte Carlo estimation of 5D safe volume for 14 models → **Personality Versatility Ranking**.
+### Manifold Structure (SNI)
+
+| Model | PC1:PC2 | Structure | Meaning |
+|-------|---------|-----------|---------|
+| Qwen3-8B | 2.7:1 | Spherical | Balanced, broadly adaptive |
+| MiniCPM4.1-8B | 7.7:1 | Channel-concentrated | Extreme efficiency along primary manifold |
+| MiniCPM-o-4.5 (VLM) | 1.5:1 | Most distributed | Multimodal alignment spreads the manifold |
+| Qwen2.5-7B Base | 1.5:1 | Uniform but all red | 143 cliffs everywhere |
+| Qwen2.5-7B Instruct | 1.5:1 | Uniform and all blue | Zero cliffs — alignment cooled the manifold |
 
 ---
 
 ## Git as Personality Checkpoint
 
-Joi's state is serialized as human-readable JSON/YAML, designed for `git diff`:
+Joi's state serializes as human-readable YAML:
 
-```json
-{
-  "joi_state_version": "0.1.0",
-  "model_id": "Qwen3-8B",
-  "session_id": "demo-001",
-  "turn_count": 5,
-  "personality": {
-    "coefficients": {
-      "emotion_valence": -0.058,
-      "formality": 0.323,
-      "creativity": -0.001,
-      "confidence": 0.001,
-      "empathy": -0.195
-    },
-    "velocity": { ... }
-  },
-  "trajectory_digest": [
-    {"t": 1, "s": {"emotion_valence": 0.0, ...}},
-    {"t": 2, "s": {"emotion_valence": -0.045, ...}},
-    ...
-  ]
-}
+```yaml
+model: Qwen3-8B
+turn: 5
+eta: 0.15
+momentum: 0.7
+state:
+  emotion_valence: -0.195
+  formality: 0.133
+  creativity: -0.285
+  confidence: -0.145
+  empathy: -0.159
+velocity:
+  emotion_valence: -0.072
+  formality: 0.093
+  creativity: -0.134
+  confidence: 0.030
+  empathy: -0.098
 ```
 
-Every `git commit` to `states/` is a **personality save point**:
+Every `git commit` is a personality save point:
 
 ```bash
-# Save current personality
-git add states/session_001.json
-git commit -m "T42: user shared childhood memory — empathy peaked at +1.2"
+git add states/session_001.yaml
+git commit -m "T42: user shared childhood memory — empathy peaked +1.2"
 
-# Restore a previous personality
-git checkout abc123 -- states/session_001.json
-
-# See how Joi evolved
-git log --oneline states/session_001.json
-
-# Branch into an alternate personality timeline
-git checkout -b joi-formal
-
-# Compare two personality snapshots
-git diff HEAD~5..HEAD -- states/session_001.json
+git checkout abc123 -- states/session_001.yaml    # restore past personality
+git checkout -b joi-formal                         # branch personality timeline
+git diff HEAD~5..HEAD -- states/session_001.yaml   # watch Joi evolve
 ```
 
-This is not a hack. Since hysteresis = 0 (experimentally verified), the state file **fully determines** Joi's behavior. Same state + same input = same output. Git gives you version control over personality for free.
+Hysteresis = 0. Same state + same input = same output. **Deterministic personality version control.**
+
+---
+
+## Design Principles
+
+1. **Personality is real, not performed.** RepEng modifies hidden states — the model computes from the steered position. It doesn't know it's been steered.
+2. **Drift is organic, not programmed.** Conversation semantics drive coefficients. No "if sad → empathy++."
+3. **Envelope constrains, doesn't judge.** No "good" or "bad" personality. Only "safe" or "will crash."
+4. **Identity = trajectory, not coordinate.** Like a river, not a pendulum. The path is the personality.
+5. **Joi is link-state.** K's Joi ≠ billboard Joi. Personality emerges from user × model interaction history.
+6. **Thinking is a crutch.** A truly capable model doesn't need CoT to stay stable. Joi works on the real manifold, not the smoothed-over version.
 
 ---
 
@@ -143,80 +184,51 @@ This is not a hack. Since hysteresis = 0 (experimentally verified), the state fi
 ```python
 from joi import DriftEngine, Envelope, Projector, JoiState
 
-# Initialize
 envelope = Envelope.from_preset("qwen3-8b-conservative")
 state = JoiState(model_id="Qwen3-8B", session_id="my-session")
-projector = Projector(vector_dir="path/to/vectors", projection_layer=27)
-projector.load_model("path/to/Qwen3-8B")
+projector = Projector(vector_dir="vectors/", projection_layer=27)
+projector.load_model("Qwen3-8B")
 engine = DriftEngine(state, envelope)
 
-# Conversation loop
 for user_message in conversation:
-    # Project conversation onto personality space
     pressure = projector.project(user_message, state)
-    
-    # Apply drift
     result = engine.step(pressure)
     print(f"T{result['turn']}: {result['coefficients']}")
-    
-    # Inject coefficients into model generation
-    # (via RepEngvLLM API or ControlModel)
-    
-    # Checkpoint
-    state.save(f"states/{state.session_id}.json")
+    state.save(f"states/{state.session_id}.yaml")
 ```
 
 ---
 
-## Architecture
+## Experiment Log
 
-```
-Conversation ──→ Projector ──→ DriftEngine ──→ Envelope Guard ──→ RepEng API ──→ Generation
-                  embed·V       s += η·v        clip(s, E)        inject α        output
-                    │                               │
-                    └── online baseline ─────────────┘
-                                                    │
-                                               State Store
-                                             (git-versioned)
-```
+| Phase | Question | Result |
+|-------|----------|--------|
+| 1 | Does conversation semantics project meaningfully onto control vectors? | **83% alignment** at Layer 27 (mean-centered) |
+| 2 | Does the drift trajectory match intuition? | Smooth, context-appropriate transitions |
+| 3 | Does closed-loop generation work? | **Zero envelope violations** across 5 turns |
+| 4 | Can we rank models by personality versatility? | Yes — alignment is 72× stronger than model size |
+| 5-A | Does thinking-off enable personality? | RLHF is a deeper prison — signal exists but subtle |
+| 5-B | Does self-feedback cause runaway? | **No — it dampens drift** (natural stabilizer) |
+| 5-C | What drift rate (η) is optimal? | **η ∈ [0.10, 0.20]**, constant smoothness |
+| 5-D | Can personality survive save/restore? | **Perfect continuity** (0.00 diff at seam) |
 
-| Component | Status | Description |
-|-----------|--------|-------------|
-| `joi.Projector` | Working | Hidden state → 5D semantic pressure |
-| `joi.DriftEngine` | Working | Momentum-based drift with envelope constraint |
-| `joi.Envelope` | Working | Per-model safe boundary (from terrain data or preset) |
-| `joi.JoiState` | Working | Git-friendly YAML/JSON serialization |
-| `experiments/` | Complete | Phase 1-4 validation scripts and results |
-
----
-
-## Design Principles
-
-1. **Personality is real, not performed.** RepEng modifies hidden states — the model computes from the steered position.
-2. **Drift is organic, not programmed.** Conversation content drives coefficients. No rule engine.
-3. **Envelope constrains, doesn't judge.** No "good" or "bad" personality. Only "safe" or "unsafe."
-4. **Identity = trajectory, not coordinate.** No fixed home point. The river's course is its identity.
-5. **Joi is link-state.** Personality emerges from user×model interaction, not from either alone.
-6. **Observability enables reproducibility.** Hysteresis = 0 → same state always produces same behavior.
+Full experimental details in [DESIGN.md](DESIGN.md).
 
 ---
 
 ## Dependencies
 
-- [repeng](https://github.com/vgel/repeng) — Control vector training and injection
+- [repeng](https://github.com/vgel/repeng) — Control vector extraction and injection
 - [transformers](https://github.com/huggingface/transformers) — Model loading and hidden state extraction
-- numpy — Core numerics
-- PyYAML (optional) — Human-readable state serialization
+- numpy, PyYAML
 
-## Related Work
+## Related
 
-- [RepSNI](https://github.com/HenryZ838978/Rep-SNI) — Semantic Nebula Imaging for visualizing model representation manifolds
+- [Rep-SNI](https://github.com/HenryZ838978/Rep-SNI) — Semantic Nebula Imaging: 3D visualization of LLM representation manifolds
 - [RepEng](https://github.com/vgel/repeng) — Representation Engineering framework
-- [Representation Engineering (Zou et al.)](https://arxiv.org/abs/2310.01405) — Foundational paper
+- [Representation Engineering (Zou et al., 2023)](https://arxiv.org/abs/2310.01405) — Foundational paper
 
 ---
-
-## Citation
 
 ```bibtex
 @software{joi2026,
@@ -227,4 +239,4 @@ Conversation ──→ Projector ──→ DriftEngine ──→ Envelope Guard 
 }
 ```
 
-<sub>Built on 14 models · 6045 generations · 92 cliff points · 4 validated experimental phases</sub>
+<sub>14 models · 6045+ generations · 92 cliff points · 8 validated experiments · thinking is a crutch</sub>

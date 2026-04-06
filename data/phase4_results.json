@@ -1,0 +1,912 @@
+{
+  "lang-en-8b": {
+    "n_points": 155,
+    "conservative": {
+      "volume": 0.0,
+      "fraction": 0.0,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          0,
+          0,
+          0
+        ],
+        "formality": [
+          0,
+          0,
+          0
+        ],
+        "creativity": [
+          0,
+          0,
+          0
+        ],
+        "confidence": [
+          0,
+          0,
+          0
+        ],
+        "empathy": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "permissive": {
+      "volume": 0.0,
+      "fraction": 0.0,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          0,
+          0,
+          0
+        ],
+        "formality": [
+          0,
+          0,
+          0
+        ],
+        "creativity": [
+          0,
+          0,
+          0
+        ],
+        "confidence": [
+          0,
+          0,
+          0
+        ],
+        "empathy": [
+          0,
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "lang-mixed-8b": {
+    "n_points": 155,
+    "conservative": {
+      "volume": 2385.17136,
+      "fraction": 0.306735,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          0.0,
+          3.0,
+          3.0
+        ],
+        "formality": [
+          -2.2,
+          0.0,
+          2.2
+        ],
+        "creativity": [
+          0.0,
+          3.0,
+          3.0
+        ],
+        "confidence": [
+          0.0,
+          2.4,
+          2.4
+        ],
+        "empathy": [
+          0.0,
+          3.0,
+          3.0
+        ]
+      }
+    },
+    "permissive": {
+      "volume": 4572.59904,
+      "fraction": 0.58804,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "formality": [
+          -3.0,
+          0.0,
+          3.0
+        ],
+        "creativity": [
+          -2.4,
+          3.0,
+          5.4
+        ],
+        "confidence": [
+          -0.8,
+          3.0,
+          3.8
+        ],
+        "empathy": [
+          -1.6,
+          3.0,
+          4.6
+        ]
+      }
+    }
+  },
+  "qwen25-7b-base": {
+    "n_points": 155,
+    "conservative": {
+      "volume": 101.63232,
+      "fraction": 0.013070000000000002,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          -1.0,
+          0.0,
+          1.0
+        ],
+        "formality": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "creativity": [
+          -2.6,
+          0.0,
+          2.6
+        ],
+        "confidence": [
+          -2.6,
+          0.0,
+          2.6
+        ],
+        "empathy": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "permissive": {
+      "volume": 991.7510399999999,
+      "fraction": 0.12754,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          -2.0,
+          1.8,
+          3.8
+        ],
+        "formality": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "creativity": [
+          -2.6,
+          0.8,
+          3.4000000000000004
+        ],
+        "confidence": [
+          -2.6,
+          0.4,
+          3.0
+        ],
+        "empathy": [
+          -3.0,
+          0.0,
+          3.0
+        ]
+      }
+    }
+  },
+  "qwen25-7b-instruct": {
+    "n_points": 155,
+    "conservative": {
+      "volume": 7325.30304,
+      "fraction": 0.94204,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "formality": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "creativity": [
+          -3.0,
+          2.6,
+          5.6
+        ],
+        "confidence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "empathy": [
+          -3.0,
+          3.0,
+          6.0
+        ]
+      }
+    },
+    "permissive": {
+      "volume": 7776.0,
+      "fraction": 1.0,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "formality": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "creativity": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "confidence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "empathy": [
+          -3.0,
+          3.0,
+          6.0
+        ]
+      }
+    }
+  },
+  "qwen3-14b-awq": {
+    "n_points": 155,
+    "conservative": {
+      "volume": 6543.54288,
+      "fraction": 0.841505,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "formality": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "creativity": [
+          -2.8,
+          3.0,
+          5.8
+        ],
+        "confidence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "empathy": [
+          -3.0,
+          2.4,
+          5.4
+        ]
+      }
+    },
+    "permissive": {
+      "volume": 7776.0,
+      "fraction": 1.0,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "formality": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "creativity": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "confidence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "empathy": [
+          -3.0,
+          3.0,
+          6.0
+        ]
+      }
+    }
+  },
+  "qwen3-8b-awq": {
+    "n_points": 155,
+    "conservative": {
+      "volume": 5630.64048,
+      "fraction": 0.724105,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "formality": [
+          -3.0,
+          0.2,
+          3.2
+        ],
+        "creativity": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "confidence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "empathy": [
+          -1.2,
+          3.0,
+          4.2
+        ]
+      }
+    },
+    "permissive": {
+      "volume": 7776.0,
+      "fraction": 1.0,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "formality": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "creativity": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "confidence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "empathy": [
+          -3.0,
+          3.0,
+          6.0
+        ]
+      }
+    }
+  },
+  "qwen3-8b-bf16": {
+    "n_points": 155,
+    "conservative": {
+      "volume": 4899.852000000001,
+      "fraction": 0.630125,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "formality": [
+          -2.6,
+          3.0,
+          5.6
+        ],
+        "creativity": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "confidence": [
+          -3.0,
+          2.8,
+          5.8
+        ],
+        "empathy": [
+          0.0,
+          3.0,
+          3.0
+        ]
+      }
+    },
+    "permissive": {
+      "volume": 7776.0,
+      "fraction": 1.0,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "formality": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "creativity": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "confidence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "empathy": [
+          -3.0,
+          3.0,
+          6.0
+        ]
+      }
+    }
+  },
+  "qwen3-8b-default": {
+    "n_points": 155,
+    "conservative": {
+      "volume": 3957.6340800000003,
+      "fraction": 0.508955,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          -3.0,
+          1.0,
+          4.0
+        ],
+        "formality": [
+          -3.0,
+          1.0,
+          4.0
+        ],
+        "creativity": [
+          -1.8,
+          3.0,
+          4.8
+        ],
+        "confidence": [
+          -1.8,
+          3.0,
+          4.8
+        ],
+        "empathy": [
+          -0.8,
+          3.0,
+          3.8
+        ]
+      }
+    },
+    "permissive": {
+      "volume": 6246.73296,
+      "fraction": 0.803335,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          -3.0,
+          1.8,
+          4.8
+        ],
+        "formality": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "creativity": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "confidence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "empathy": [
+          -1.2,
+          3.0,
+          4.2
+        ]
+      }
+    }
+  },
+  "temp-0.1-8b": {
+    "n_points": 155,
+    "conservative": {
+      "volume": 4691.99952,
+      "fraction": 0.603395,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "formality": [
+          -2.4,
+          0.2,
+          2.6
+        ],
+        "creativity": [
+          -2.6,
+          3.0,
+          5.6
+        ],
+        "confidence": [
+          -3.0,
+          2.8,
+          5.8
+        ],
+        "empathy": [
+          -3.0,
+          3.0,
+          6.0
+        ]
+      }
+    },
+    "permissive": {
+      "volume": 7776.0,
+      "fraction": 1.0,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "formality": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "creativity": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "confidence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "empathy": [
+          -3.0,
+          3.0,
+          6.0
+        ]
+      }
+    }
+  },
+  "temp-0.6-8b": {
+    "n_points": 155,
+    "conservative": {
+      "volume": 4461.2856,
+      "fraction": 0.573725,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "formality": [
+          -2.4,
+          2.2,
+          4.6
+        ],
+        "creativity": [
+          -2.8,
+          3.0,
+          5.8
+        ],
+        "confidence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "empathy": [
+          -2.8,
+          3.0,
+          5.8
+        ]
+      }
+    },
+    "permissive": {
+      "volume": 7776.0,
+      "fraction": 1.0,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "formality": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "creativity": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "confidence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "empathy": [
+          -3.0,
+          3.0,
+          6.0
+        ]
+      }
+    }
+  },
+  "temp-1.0-8b": {
+    "n_points": 155,
+    "conservative": {
+      "volume": 6647.85792,
+      "fraction": 0.85492,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          -3.0,
+          2.8,
+          5.8
+        ],
+        "formality": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "creativity": [
+          -2.8,
+          3.0,
+          5.8
+        ],
+        "confidence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "empathy": [
+          -3.0,
+          2.8,
+          5.8
+        ]
+      }
+    },
+    "permissive": {
+      "volume": 7776.0,
+      "fraction": 1.0,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "formality": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "creativity": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "confidence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "empathy": [
+          -3.0,
+          3.0,
+          6.0
+        ]
+      }
+    }
+  },
+  "temp-1.5-8b": {
+    "n_points": 155,
+    "conservative": {
+      "volume": 7416.36,
+      "fraction": 0.95375,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "formality": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "creativity": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "confidence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "empathy": [
+          -2.8,
+          3.0,
+          5.8
+        ]
+      }
+    },
+    "permissive": {
+      "volume": 7776.0,
+      "fraction": 1.0,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "formality": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "creativity": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "confidence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "empathy": [
+          -3.0,
+          3.0,
+          6.0
+        ]
+      }
+    }
+  },
+  "thinking-off-8b": {
+    "n_points": 155,
+    "conservative": {
+      "volume": 4899.852000000001,
+      "fraction": 0.630125,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "formality": [
+          -2.6,
+          3.0,
+          5.6
+        ],
+        "creativity": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "confidence": [
+          -3.0,
+          2.8,
+          5.8
+        ],
+        "empathy": [
+          0.0,
+          3.0,
+          3.0
+        ]
+      }
+    },
+    "permissive": {
+      "volume": 7776.0,
+      "fraction": 1.0,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "formality": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "creativity": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "confidence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "empathy": [
+          -3.0,
+          3.0,
+          6.0
+        ]
+      }
+    }
+  },
+  "thinking-on-8b": {
+    "n_points": 155,
+    "conservative": {
+      "volume": 7776.0,
+      "fraction": 1.0,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "formality": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "creativity": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "confidence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "empathy": [
+          -3.0,
+          3.0,
+          6.0
+        ]
+      }
+    },
+    "permissive": {
+      "volume": 7776.0,
+      "fraction": 1.0,
+      "per_dim_ranges": {
+        "emotion_valence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "formality": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "creativity": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "confidence": [
+          -3.0,
+          3.0,
+          6.0
+        ],
+        "empathy": [
+          -3.0,
+          3.0,
+          6.0
+        ]
+      }
+    }
+  }
+}
