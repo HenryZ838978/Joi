@@ -1,0 +1,25 @@
+{
+  "model": "glm4-9b-chat",
+  "model_type": "LLM",
+  "model_path": "/cache/zhangjing/models_sni_cache/ZhipuAI/glm-4-9b-chat",
+  "layer": 30,
+  "n_layers": 40,
+  "hidden_size": 4096,
+  "pca_variance": [
+    0.20558367669582367,
+    0.1671629399061203,
+    0.1227947548031807
+  ],
+  "pc1_pc2_ratio": 1.2298400402069092,
+  "structure": "DISTRIBUTED",
+  "n_points": 48,
+  "pointcloud": [
+    {
+      "x": 2.8288354873657227,
+      "y": 25.549638748168945,
+      "z": -4.126723289489746,
+      "r": 0.5,
+      "g": 0.5,
+      "b": 0.5,
+      "style": "neutral",
+      "prompt": 

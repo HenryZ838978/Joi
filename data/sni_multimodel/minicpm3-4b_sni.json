@@ -1,0 +1,25 @@
+{
+  "model": "minicpm3-4b",
+  "model_type": "LLM",
+  "model_path": "/cache/zhangjing/models_sni_cache/OpenBMB/MiniCPM3-4B",
+  "layer": 46,
+  "n_layers": 62,
+  "hidden_size": 2560,
+  "pca_variance": [
+    0.18805499374866486,
+    0.14784717559814453,
+    0.13906988501548767
+  ],
+  "pc1_pc2_ratio": 1.2719552516937256,
+  "structure": "DISTRIBUTED",
+  "n_points": 48,
+  "pointcloud": [
+    {
+      "x": -27.200551986694336,
+      "y": -0.88306725025177,
+      "z": -8.84321117401123,
+      "r": 0.5,
+      "g": 0.5,
+      "b": 0.5,
+      "style": "neutral",
+      "prompt": 
