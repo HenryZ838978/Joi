@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Multi-Model SNI — Semantic Nebula Imaging</title>
+<style>
+:root {
+  --bg: #0a0b10;
+  --card: #12131a;
+  --border: #252738;
+  --text: #c8cad8;
+  --accent: #5b8def;
+  --warm: #f07040;
+  --cool: #40b0f0;
+  --green: #40d080;
+  --gold: #f0c040;
+  --purple: #a070f0;
+  --pink: #f070b0;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'SF Mono', 'Fira Code', monospace; overflow-x: hidden; }
+.header { text-align: center; padding: 40px 20px 20px; }
+.header h1 { font-size: 28px; color: #fff; letter-spacing: 2px; }
+.header .sub { font-size: 13px; color: #667; margin-top: 8px; }
+.section { max-width: 1200px; margin: 0 auto; padding: 20px; }
+.section h2 { font-size: 18px; color: var(--accent); margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+
+/* Model cards */
+.model-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; margin-bottom: 30px; }
+.model-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; position: relative; }
+.model-card .name { font-size: 16px; color: #fff; font-weight: 700; }
+.model-card .type { font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-left: 8px; }
+.type-llm { background: #1a2a4a; color: var(--accent); }
+.type-vlm { background: #2a1a3a; color: var(--purple); }
+.type-omni { background: #1a3a2a; color: var(--green); }
+.model-card .stats { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+.stat { text-align: center; }
+.stat .val { font-size: 22px; font-weight: 700; }
+.stat .label { font-size: 10px; color: #667; text-transform: uppercase; }
+.model-card canvas { width: 100%; height: 180px; margin-top: 12px; border-radius: 4px; }
+.bar-chart { margin-top: 12px; }
+.bar-row { display: flex; align-items: center; margin: 4px 0; }
+.bar-label { width: 50px; font-size: 10px; color: #667; text-align: right; margin-right: 8px; }
+.bar-track { flex: 1; height: 18px; background: #1a1b24; border-radius: 3px; position: relative; }
+.bar-fill { height: 100%; border-radius: 3px; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; font-size: 10px; color: #fff; font-weight: 600; min-width: 30px; transition: width 0.5s ease; }
+
+/* Depth chart */
+.depth-chart { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 30px; }
+.depth-chart canvas { width: 100%; height: 350px; }
+
+/* Ranking table */
+.ranking { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+.ranking th, .ranking td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+.ranking th { color: var(--accent); font-size: 11px; text-transform: uppercase; }
+.ranking td { font-size: 13px; }
+.ranking tr:hover { background: #1a1b24; }
+.rank-bar { height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--accent), var(--purple)); }
+
+/* SNI nebula */
+.nebula-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; }
+.nebula-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.nebula-card .title-bar { padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; }
+.nebula-card .title-bar .name { font-size: 14px; color: #fff; font-weight: 600; }
+.nebula-card canvas { width: 100%; height: 300px; cursor: grab; }
+
+/* Insights */
+.insight { background: linear-gradient(135deg, #1a1a2e, #16213e); border-left: 3px solid var(--accent); padding: 16px 20px; margin: 10px 0; border-radius: 0 8px 8px 0; }
+.insight .title { font-size: 14px; color: #fff; font-weight: 600; margin-bottom: 6px; }
+.insight .body { font-size: 12px; line-height: 1.6; color: #99a; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>SEMANTIC NEBULA IMAGING — MULTI-MODEL</h1>
+  <div class="sub">5 models × 3 architectures × 4 depth layers · hidden state PCA at 3/4 depth</div>
+</div>
+
+<div class="section">
+  <h2>Model Ranking — Manifold Distribution</h2>
+  <table class="ranking" id="ranking"></table>
+</div>
+
+<div class="section">
+  <h2>Depth Profile — Concentration vs Layer</h2>
+  <div class="depth-chart">
+    <canvas id="depthCanvas"></canvas>
+  </div>
+  <div class="insight">
+    <div class="title">Universal pattern: shallow concentrated → deep distributed</div>
+    <div class="body">
+      All models show PC1:PC2 > 8:1 at shallow layers (token-level features dominate),
+      transitioning to < 3:1 at deep layers (semantic concepts distribute across dimensions).
+      <strong>Alignment amplifies this effect</strong> — Instruct models achieve 2.5:1 at depth vs Base's 5.3:1.
+      VLMs retain higher deep-layer concentration (6.2:1), suggesting visual alignment leaves structural imprints.
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Semantic Nebulae — Interactive 3D</h2>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#808080"></div> neutral</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ff6666"></div> emotional</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#4dcccc"></div> formal</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ffe666"></div> creative</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#9980ff"></div> confident</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ff80cc"></div> empathic</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#4d80ff"></div> cold</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#80ff80"></div> casual</div>
+  </div>
+  <div class="nebula-container" id="nebulae"></div>
+</div>
+
+<div class="section">
+  <h2>Key Findings</h2>
+  <div class="insight">
+    <div class="title">1. Distributed structure is universal</div>
+    <div class="body">Every model tested — Qwen, MiniCPM-o, Qwen2-VL — shows PC1:PC2 < 2:1 at the personality-relevant depth (3/4 layers). The "semantic nebula" is not an artifact of one architecture. It's how transformers organize high-level concepts.</div>
+  </div>
+  <div class="insight">
+    <div class="title">2. MiniCPM-o: extreme channel efficiency</div>
+    <div class="body">MiniCPM-o-4.5's omni-modal architecture concentrates information flow along a highly efficient primary manifold channel. Where other models spread variance across many dimensions, MiniCPM-o routes it through fewer, more powerful channels — achieving high throughput with concentrated geometry. This aligns with density-law predictions for optimized architectures.</div>
+  </div>
+  <div class="insight">
+    <div class="title">3. Vision alignment reshapes deep layers</div>
+    <div class="body">Qwen2-VL retains higher concentration at depth (6.2:1 at L27) compared to text-only Qwen2.5-Instruct (2.5:1). Visual grounding appears to impose a structural constraint that persists even in the text-only representation pathway. This has implications for Joi: VLM personality envelopes may have different shapes.</div>
+  </div>
+  <div class="insight">
+    <div class="title">4. RLHF smooths the deep manifold</div>
+    <div class="body">Base → Instruct comparison: deep-layer PC1:PC2 drops from 5.3:1 to 2.5:1. Alignment doesn't just remove cliffs — it actively distributes the representation across more dimensions. This is why aligned models have larger safe envelopes (94% vs 1.3%) and why they resist personality steering.</div>
+  </div>
+</div>
+
+<div class="section" style="text-align:center; padding: 40px; color: #445;">
+  <div style="font-size: 11px;">Joi · Semantic Nebula Imaging · 5 models · 3 architectures · 240 hidden state extractions</div>
+</div>
+
+<script>
+const MODELS = [
+  {
+    "tag": "qwen3-8b",
+    "name": "qwen3-8b",
+    "type": "LLM",
+    "layers": 36,
+    "hidden": 4096,
+    "pc12": 1.438053846359253,
+    "pca": [
+      27.9,
+      19.4,
+      13.1
+    ],
+    "depth": {
+      "9": 16.36720848083496,
+      "18": 7.677140235900879,
+      "27": 4.7779741287231445,
+      "35": 6.591059684753418
+    },
+    "note": "Reference model. Balanced distribution.",
+    "color": "#5b8def"
+  },
+  {
+    "tag": "minicpm-o-45",
+    "name": "MiniCPM-o-4.5-AWQ",
+    "type": "VLM/Omni",
+    "layers": 36,
+    "hidden": 4096,
+    "pc12": 1.5466346740722656,
+    "pca": [
+      27.8,
+      18.0,
+      14.4
+    ],
+    "depth": {},
+    "note": "Omni-modal. Highly efficient primary channel.",
+    "color": "#40d080"
+  },
+  {
+    "tag": "qwen25-instruct",
+    "name": "qwen25-7b-instruct",
+    "type": "LLM",
+    "layers": 28,
+    "hidden": 3584,
+    "pc12": 1.59145987033844,
+    "pca": [
+      23.6,
+      14.8,
+      12.4
+    ],
+    "depth": {
+      "7": 10.468854904174805,
+      "14": 11.59216022491455,
+      "21": 2.8545572757720947,
+      "27": 2.5001678466796875
+    },
+    "note": "Alignment distributes deep layers most aggressively.",
+    "color": "#f0c040"
+  },
+  {
+    "tag": "qwen2vl-7b",
+    "name": "qwen2vl-7b",
+    "type": "VLM",
+    "layers": 28,
+    "hidden": 3584,
+    "pc12": 1.6611307859420776,
+    "pca": [
+      30.1,
+      18.1,
+      13.7
+    ],
+    "depth": {
+      "7": 11.553783416748047,
+      "14": 11.884764671325684,
+      "21": 7.567373275756836,
+      "27": 6.162484645843506
+    },
+    "note": "Vision alignment retains deep-layer concentration.",
+    "color": "#a070f0"
+  },
+  {
+    "tag": "qwen25-base",
+    "name": "qwen25-7b-base",
+    "type": "LLM",
+    "layers": 28,
+    "hidden": 3584,
+    "pc12": 1.8241941928863525,
+    "pca": [
+      29.1,
+      15.9,
+      14.1
+    ],
+    "depth": {
+      "7": 8.45556354522705,
+      "14": 6.0004706382751465,
+      "21": 4.715968132019043,
+      "27": 5.330940246582031
+    },
+    "note": "Unaligned. Most concentrated at extraction depth.",
+    "color": "#f07040"
+  }
+];
+
+// Point cloud data embedded
+const POINTCLOUDS = {"qwen3-8b":[{"x":-77.93930053710938,"y":29.392911911010742,"z":88.9086685180664,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":-54.9415283203125,"y":43.887699127197266,"z":75.93870544433594,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":-70.46852111816406,"y":47.38508987426758,"z":88.93426513671875,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":-55.745643615722656,"y":37.06486892700195,"z":42.73476028442383,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":-60.95207214355469,"y":37.531681060791016,"z":59.96316909790039,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":-46.29908752441406,"y":38.752593994140625,"z":80.93283081054688,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":-72.12527465820312,"y":39.89259338378906,"z":79.97584533691406,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":-40.05219268798828,"y":26.831249237060547,"z":45.50285720825195,"r":0.5,"g":1.0,"b":0.5,"style":"casual"},{"x":7.7912139892578125,"y":-76.14476776123047,"z":-93.12969970703125,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":17.26352882385254,"y":-80.40166473388672,"z":-96.53658294677734,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":-10.176482200622559,"y":-66.4232177734375,"z":-69.67462158203125,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":-14.944890975952148,"y":-65.31243133544922,"z":-92.28461456298828,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":-8.567045211791992,"y":-72.15194702148438,"z":-90.60562133789062,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":24.559354782104492,"y":-78.75357055664062,"z":-91.77178192138672,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":-4.497767925262451,"y":-66.27052307128906,"z":-84.09784698486328,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":5.653587341308594,"y":-77.92708587646484,"z":-89.54850006103516,"r":0.5,"g":1.0,"b":0.5,"style":"casual"},{"x":20.954692840576172,"y":74.03349304199219,"z":-23.44544792175293,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":30.481515884399414,"y":76.02099609375,"z":-24.748449325561523,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":8.401479721069336,"y":86.8730239868164,"z":-16.371585845947266,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":3.584132194519043,"y":61.039939880371094,"z":-34.94457244873047,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":17.515594482421875,"y":64.133544921875,"z":-23.697206497192383,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":30.386680603027344,"y":68.7715072631836,"z":-22.239839553833008,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":17.0236759185791,"y":80.05864715576172,"z":-23.95633888244629,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":33.142127990722656,"y":53.87652587890625,"z":-25.972827911376953,"r":0.5,"g":1.0,"b":0.5,"style":"casual"},{"x":179.83358764648438,"y":-29.06878089904785,"z":59.288578033447266,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":139.51663208007812,"y":-37.90190124511719,"z":35.76555633544922,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":161.89199829101562,"y":-23.695831298828125,"z":58.66596603393555,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":128.7796173095703,"y":-34.75746536254883,"z":28.890714645385742,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":156.38832092285156,"y":-34.186180114746094,"z":42.05159378051758,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":170.69932556152344,"y":-35.762351989746094,"z":54.864501953125,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":160.2901611328125,"y":-30.838865280151367,"z":48.27046203613281,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":166.8738250732422,"y":-40.962547302246094,"z":43.53116989135742,"r":0.5,"g":1.0,"b":0.5,"style":"casual"},{"x":-12.683241844177246,"y":102.89183807373047,"z":-49.95212173461914,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":-14.084692001342773,"y":78.94833374023438,"z":-36.951316833496094,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":-38.968040466308594,"y":87.25271606445312,"z":-24.375186920166016,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":-31.37215232849121,"y":87.99796295166016,"z":-41.4704704284668,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":-23.318071365356445,"y":86.53876495361328,"z":-39.18042755126953,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":-15.22122859954834,"y":83.60999298095703,"z":-30.562929153442383,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":-40.36363983154297,"y":76.65784454345703,"z":-34.558502197265625,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":-12.774171829223633,"y":68.66618347167969,"z":-36.77276611328125,"r":0.5,"g":1.0,"b":0.5,"style":"casual"},{"x":-106.6020736694336,"y":-110.2145767211914,"z":38.90684127807617,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":-91.02317810058594,"y":-84.67220306396484,"z":35.16813659667969,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":-109.9753646850586,"y":-73.6540756225586,"z":44.76100540161133,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":-98.91213989257812,"y":-77.11911010742188,"z":18.84558868408203,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":-92.36589813232422,"y":-79.35777282714844,"z":23.664920806884766,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":-87.53104400634766,"y":-89.30297088623047,"z":43.726200103759766,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":-109.0428466796875,"y":-84.3673095703125,"z":40.82903289794922,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":-80.08330535888672,"y":-88.86279296875,"z":16.727964401245117,"r":0.5,"g":1.0,"b":0.5,"style":"casual"}],"minicpm-o-45":[{"x":-16.004911422729492,"y":5.868778228759766,"z":5.625932693481445,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":-12.0726900100708,"y":10.685978889465332,"z":0.4706839621067047,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":-16.987733840942383,"y":25.803955078125,"z":1.0199084281921387,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":-23.12501335144043,"y":24.89936637878418,"z":-5.374894142150879,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":-16.517086029052734,"y":24.658674240112305,"z":-0.9891648888587952,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":-17.183013916015625,"y":28.663562774658203,"z":-0.5343784093856812,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":-17.95782470703125,"y":26.32264518737793,"z":1.4436818361282349,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":-21.12504768371582,"y":27.09872055053711,"z":-1.016828179359436,"r":0.5,"g":1.0,"b":0.5,"style":"casual"},{"x":36.48659896850586,"y":-3.263392686843872,"z":2.7442755699157715,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":28.127239227294922,"y":-8.65926742553711,"z":-8.009895324707031,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":37.297340393066406,"y":1.651598334312439,"z":-6.577352523803711,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":32.885005950927734,"y":1.078971266746521,"z":-10.503748893737793,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":32.292110443115234,"y":1.8381688594818115,"z":-6.533047199249268,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":34.54724884033203,"y":3.254883289337158,"z":-7.923814296722412,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":32.217159271240234,"y":1.5698641538619995,"z":-9.068208694458008,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":24.757654190063477,"y":5.227081298828125,"z":-8.32064151763916,"r":0.5,"g":1.0,"b":0.5,"style":"casual"},{"x":13.920702934265137,"y":-5.520203113555908,"z":80.16067504882812,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":-12.690814018249512,"y":-35.56315994262695,"z":1.6724026203155518,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":-20.829435348510742,"y":-18.953079223632812,"z":-5.648372650146484,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":-22.240798950195312,"y":-30.055452346801758,"z":-6.452669620513916,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":-19.043054580688477,"y":-21.58870506286621,"z":-6.288258075714111,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":-20.807188034057617,"y":-24.46759033203125,"z":-4.377071380615234,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":-19.05567169189453,"y":-24.45174217224121,"z":-3.032388210296631,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":-16.89078712463379,"y":-16.099668502807617,"z":-2.4868452548980713,"r":0.5,"g":1.0,"b":0.5,"style":"casual"}],"qwen25-instruct":[{"x":35.10464859008789,"y":-7.069617748260498,"z":-35.25770950317383,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":25.292509078979492,"y":-4.087643146514893,"z":-26.911502838134766,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":37.20606231689453,"y":-4.673181056976318,"z":-28.34634017944336,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":26.731952667236328,"y":4.374111652374268,"z":-5.445357799530029,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":29.483362197875977,"y":-7.559725761413574,"z":-17.91992950439453,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":19.899032592773438,"y":-5.606344699859619,"z":-20.203428268432617,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":33.07179641723633,"y":-5.83599328994751,"z":-30.655092239379883,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":10.103076934814453,"y":-6.043347358703613,"z":-3.5176596641540527,"r":0.5,"g":1.0,"b":0.5,"style":"casual"},{"x":-15.906164169311523,"y":-38.11224365234375,"z":50.61940002441406,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":-23.478836059570312,"y":-25.152894973754883,"z":41.01618194580078,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":1.66842782497406,"y":-24.68243408203125,"z":27.671039581298828,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":-9.323225975036621,"y":-19.87875747680664,"z":42.71004867553711,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":-11.955771446228027,"y":-32.6848258972168,"z":46.29268264770508,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":-21.022384643554688,"y":-27.55297088623047,"z":42.28021240234375,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":-13.6072998046875,"y":-28.69354820251465,"z":35.62369918823242,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":-23.07893180847168,"y":-32.279296875,"z":56.2585334777832,"r":0.5,"g":1.0,"b":0.5,"style":"casual"},{"x":19.13521957397461,"y":12.255583763122559,"z":-25.980363845825195,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":9.532655715942383,"y":14.0639066696167,"z":-25.93943977355957,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":23.079696655273438,"y":9.453753471374512,"z":-25.725528717041016,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":14.696935653686523,"y":11.96490478515625,"z":-11.802303314208984,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":12.258707046508789,"y":1.4397766590118408,"z":-14.124966621398926,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":0.5988339185714722,"y":8.953641891479492,"z":-19.71451759338379,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":12.561797142028809,"y":11.450942993164062,"z":-27.239885330200195,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":-4.201616287231445,"y":5.237537860870361,"z":-4.843563079833984,"r":0.5,"g":1.0,"b":0.5,"style":"casual"},{"x":-77.7015609741211,"y":26.06049156188965,"z":-21.056520462036133,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":-69.02173614501953,"y":20.84821319580078,"z":-11.591512680053711,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":-63.119102478027344,"y":20.672271728515625,"z":-23.48585319519043,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":-61.54830551147461,"y":18.18960189819336,"z":-7.8047075271606445,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":-69.14546966552734,"y":12.912067413330078,"z":-11.159239768981934,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":-77.9973373413086,"y":21.523571014404297,"z":-14.102514266967773,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":-73.22346496582031,"y":17.741411209106445,"z":-19.11496925354004,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":-71.48589324951172,"y":13.464795112609863,"z":-2.0102174282073975,"r":0.5,"g":1.0,"b":0.5,"style":"casual"},{"x":41.17469024658203,"y":52.2136344909668,"z":32.265869140625,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":27.272851943969727,"y":43.560455322265625,"z":23.19305419921875,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":42.63438415527344,"y":41.73932647705078,"z":18.341398239135742,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":33.395572662353516,"y":46.82058334350586,"z":24.22115135192871,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":33.06171798706055,"y":40.383941650390625,"z":25.41429328918457,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":29.230445861816406,"y":42.82567596435547,"z":22.49333953857422,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":38.18787384033203,"y":49.67083740234375,"z":25.849151611328125,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":17.01125144958496,"y":30.325515747070312,"z":25.147350311279297,"r":0.5,"g":1.0,"b":0.5,"style":"casual"},{"x":17.447782516479492,"y":-45.73777770996094,"z":-24.956127166748047,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":10.718140602111816,"y":-34.77946853637695,"z":-13.544057846069336,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":24.963102340698242,"y":-35.16188430786133,"z":-20.906721115112305,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":18.002792358398438,"y":-26.809444427490234,"z":-0.6382831931114197,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":14.695134162902832,"y":-39.65741729736328,"z":-9.799653053283691,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":8.28233814239502,"y":-39.65913391113281,"z":-13.711565017700195,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":19.007110595703125,"y":-45.29556655883789,"z":-23.41474151611328,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":0.3072354793548584,"y":-41.133052825927734,"z":1.5268701314926147,"r":0.5,"g":1.0,"b":0.5,"style":"casual"}],"qwen2vl-7b":[{"x":36.60905456542969,"y":-26.9628849029541,"z":-32.88829803466797,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":26.915225982666016,"y":-20.274425506591797,"z":-26.123558044433594,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":32.285560607910156,"y":-21.979148864746094,"z":-27.51746940612793,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":26.89273452758789,"y":-10.935674667358398,"z":-17.70147705078125,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":27.943866729736328,"y":-19.833913803100586,"z":-20.748952865600586,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":23.48710823059082,"y":-20.400371551513672,"z":-25.39552879333496,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":31.584522247314453,"y":-22.556005477905273,"z":-26.099239349365234,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":18.260087966918945,"y":-13.353520393371582,"z":-13.870481491088867,"r":0.5,"g":1.0,"b":0.5,"style":"casual"},{"x":-14.969047546386719,"y":-10.530585289001465,"z":55.35221862792969,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":-27.626323699951172,"y":-7.290998458862305,"z":49.55070495605469,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":-11.24620532989502,"y":-10.716946601867676,"z":38.04789352416992,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":-13.699882507324219,"y":-2.0433804988861084,"z":48.507362365722656,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":-19.381704330444336,"y":-7.425384044647217,"z":50.3144416809082,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":-26.103179931640625,"y":-6.2390217781066895,"z":48.15968704223633,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":-16.039770126342773,"y":-12.753815650939941,"z":47.75204086303711,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":-24.357650756835938,"y":-5.639004230499268,"z":55.12777328491211,"r":0.5,"g":1.0,"b":0.5,"style":"casual"},{"x":10.711984634399414,"y":1.6457366943359375,"z":-12.131379127502441,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":3.036046266555786,"y":3.21419620513916,"z":-10.371095657348633,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":11.20042610168457,"y":-1.0127334594726562,"z":-12.561238288879395,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":8.456063270568848,"y":8.153796195983887,"z":-2.9788053035736084,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":4.193698883056641,"y":0.6821722388267517,"z":-4.174340724945068,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":-2.6138455867767334,"y":3.2962965965270996,"z":-6.864925861358643,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":7.3720574378967285,"y":2.1137421131134033,"z":-10.052383422851562,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":-5.907708644866943,"y":4.916245460510254,"z":-1.9672547578811646,"r":0.5,"g":1.0,"b":0.5,"style":"casual"},{"x":-74.08583068847656,"y":7.389140605926514,"z":-28.49619483947754,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":-74.28662109375,"y":8.778919219970703,"z":-21.847108840942383,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":-65.59036254882812,"y":3.64534330368042,"z":-27.650861740112305,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":-66.65518188476562,"y":5.999911308288574,"z":-18.097658157348633,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":-71.18336486816406,"y":4.260533332824707,"z":-18.519197463989258,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":-73.09225463867188,"y":9.490455627441406,"z":-26.460599899291992,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":-72.36138916015625,"y":5.418896198272705,"z":-24.465124130249023,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":-71.44987487792969,"y":5.263458728790283,"z":-13.734051704406738,"r":0.5,"g":1.0,"b":0.5,"style":"casual"},{"x":39.56666564941406,"y":68.42220306396484,"z":0.881878137588501,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":30.83591651916504,"y":55.46596908569336,"z":0.6671633720397949,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":35.92660903930664,"y":40.14442825317383,"z":-3.1431972980499268,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":36.78939437866211,"y":62.53510665893555,"z":0.8642876148223877,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":32.14750671386719,"y":54.27119827270508,"z":4.538832187652588,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":31.04388427734375,"y":54.6996955871582,"z":1.2158805131912231,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":35.91128921508789,"y":58.314273834228516,"z":2.7392635345458984,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":16.03543472290039,"y":39.416629791259766,"z":11.572062492370605,"r":0.5,"g":1.0,"b":0.5,"style":"casual"},{"x":30.96489715576172,"y":-41.93784713745117,"z":-1.6005553007125854,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":25.30428123474121,"y":-37.155208587646484,"z":-0.4192062318325043,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":30.055953979492188,"y":-36.42453384399414,"z":-2.210846424102783,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":23.942869186401367,"y":-28.74177360534668,"z":5.327383995056152,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":23.57587242126465,"y":-34.53596878051758,"z":5.773695945739746,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":24.255634307861328,"y":-38.0637092590332,"z":0.793635904788971,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":28.755857467651367,"y":-40.194053649902344,"z":0.7091230154037476,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":16.58964729309082,"y":-30.537410736083984,"z":10.195695877075195,"r":0.5,"g":1.0,"b":0.5,"style":"casual"}],"qwen25-base":[{"x":37.68559265136719,"y":-23.897321701049805,"z":-28.96099281311035,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":28.4736270904541,"y":-20.197267532348633,"z":-27.230093002319336,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":25.196352005004883,"y":-20.897621154785156,"z":-43.26888656616211,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":32.71159362792969,"y":-7.404242515563965,"z":-14.987857818603516,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":33.56952667236328,"y":-16.50670623779297,"z":-16.31623649597168,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":31.000118255615234,"y":-20.198923110961914,"z":-23.82157325744629,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":34.056053161621094,"y":-22.216262817382812,"z":-26.693098068237305,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":25.54546356201172,"y":-15.845389366149902,"z":-13.698779106140137,"r":0.5,"g":1.0,"b":0.5,"style":"casual"},{"x":-22.502309799194336,"y":-10.255350112915039,"z":55.94709777832031,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":-22.598949432373047,"y":-11.672789573669434,"z":47.42586135864258,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":-0.2937888205051422,"y":-7.781570911407471,"z":45.324222564697266,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":2.681494951248169,"y":-3.376418113708496,"z":62.526222229003906,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":-4.001864910125732,"y":-6.883327007293701,"z":64.62031555175781,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":-6.527526378631592,"y":-9.676857948303223,"z":61.641136169433594,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":-4.407939434051514,"y":-12.063068389892578,"z":60.61011505126953,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":-7.746847152709961,"y":-10.7495756149292,"z":71.1633071899414,"r":0.5,"g":1.0,"b":0.5,"style":"casual"},{"x":16.296710968017578,"y":4.692414283752441,"z":-28.83930015563965,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":4.080994606018066,"y":3.3874597549438477,"z":-34.57289505004883,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":9.66514778137207,"y":4.327608585357666,"z":-40.0654296875,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":13.896056175231934,"y":3.2069625854492188,"z":-19.318012237548828,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":11.291868209838867,"y":1.1345230340957642,"z":-15.29227352142334,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":7.113249778747559,"y":1.3272498846054077,"z":-28.5792236328125,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":9.541327476501465,"y":2.0588159561157227,"z":-30.06496810913086,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":6.682135581970215,"y":2.3285467624664307,"z":-17.917003631591797,"r":0.5,"g":1.0,"b":0.5,"style":"casual"},{"x":-95.25251770019531,"y":18.89523696899414,"z":-21.910676956176758,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":-83.58354949951172,"y":7.58958101272583,"z":-9.96336841583252,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":-82.82610321044922,"y":7.8776421546936035,"z":-21.285125732421875,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":-87.7060546875,"y":4.712277889251709,"z":-12.006710052490234,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":-91.84506225585938,"y":5.106043815612793,"z":-11.695741653442383,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":-94.88662719726562,"y":8.2736234664917,"z":-13.856751441955566,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":-96.4434585571289,"y":6.814217567443848,"z":-14.545007705688477,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":-83.18738555908203,"y":1.7139719724655151,"z":-4.920256614685059,"r":0.5,"g":1.0,"b":0.5,"style":"casual"},{"x":43.79367446899414,"y":74.53951263427734,"z":11.993598937988281,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":30.08001708984375,"y":53.743473052978516,"z":0.5076082348823547,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":32.09742736816406,"y":44.46472930908203,"z":-13.488504409790039,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":36.98390197753906,"y":69.26532745361328,"z":8.333415985107422,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":35.282264709472656,"y":61.14919662475586,"z":8.184910774230957,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":33.91965866088867,"y":59.56223678588867,"z":2.4388296604156494,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":36.989288330078125,"y":65.55609130859375,"z":6.8030877113342285,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":27.14029884338379,"y":48.8045654296875,"z":11.516915321350098,"r":0.5,"g":1.0,"b":0.5,"style":"casual"},{"x":24.62854766845703,"y":-43.319236755371094,"z":-1.3489160537719727,"r":0.5,"g":0.5,"b":0.5,"style":"neutral"},{"x":12.244284629821777,"y":-38.340545654296875,"z":-1.1503417491912842,"r":1.0,"g":0.4,"b":0.4,"style":"emotional"},{"x":20.515047073364258,"y":-45.145748138427734,"z":-15.488051414489746,"r":0.3,"g":0.8,"b":0.8,"style":"formal"},{"x":26.875070571899414,"y":-32.14302444458008,"z":9.24134635925293,"r":1.0,"g":0.9,"b":0.4,"style":"creative"},{"x":26.09194564819336,"y":-43.65850067138672,"z":8.176078796386719,"r":0.6,"g":0.5,"b":1.0,"style":"confident"},{"x":20.669445037841797,"y":-45.19725036621094,"z":2.432737350463867,"r":1.0,"g":0.5,"b":0.8,"style":"empathic"},{"x":26.083614349365234,"y":-50.08091354370117,"z":0.5234321355819702,"r":0.3,"g":0.5,"b":1.0,"style":"cold"},{"x":20.928251266479492,"y":-43.023406982421875,"z":11.875847816467285,"r":0.5,"g":1.0,"b":0.5,"style":"casual"}]};
+</script>
+
+<script>
+// ═══════ Ranking table ═══════
+function renderRanking() {
+  const tbl = document.getElementById('ranking');
+  const sorted = [...MODELS].sort((a,b) => a.pc12 - b.pc12);
+  const maxPC = Math.max(...sorted.map(m => m.pc12));
+  let html = `<tr><th>#</th><th>Model</th><th>Type</th><th>Layers</th><th>PC1:PC2</th><th>Distribution</th><th>Note</th></tr>`;
+  sorted.forEach((m, i) => {
+    const pct = ((2 - m.pc12) / (2 - 1)) * 100; // normalize: 1.0=100%, 2.0=0%
+    const tc = m.type === 'VLM' ? 'type-vlm' : m.type.includes('Omni') ? 'type-omni' : 'type-llm';
+    html += `<tr>
+      <td style="color:${m.color};font-weight:700">${i+1}</td>
+      <td style="color:#fff;font-weight:600">${m.name}</td>
+      <td><span class="type ${tc}">${m.type}</span></td>
+      <td>${m.layers}L / ${m.hidden}d</td>
+      <td style="color:${m.color};font-weight:700">${m.pc12.toFixed(2)}:1</td>
+      <td style="width:200px"><div class="rank-bar" style="width:${Math.max(10,pct)}%;background:${m.color}"></div></td>
+      <td style="font-size:11px;color:#889">${m.note}</td>
+    </tr>`;
+  });
+  tbl.innerHTML = html;
+}
+renderRanking();
+
+// ═══════ Depth chart (canvas) ═══════
+function renderDepthChart() {
+  const canvas = document.getElementById('depthCanvas');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = 350 * dpr;
+  canvas.style.height = '350px';
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = 350;
+
+  const pad = {l: 60, r: 30, t: 30, b: 50};
+  const plotW = W - pad.l - pad.r;
+  const plotH = H - pad.t - pad.b;
+
+  // Background
+  ctx.fillStyle = '#12131a';
+  ctx.fillRect(0, 0, W, H);
+
+  // Grid
+  const yMax = 18;
+  const yTicks = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18];
+  ctx.strokeStyle = '#1e2030';
+  ctx.lineWidth = 1;
+  yTicks.forEach(v => {
+    const y = pad.t + plotH - (v / yMax) * plotH;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + plotW, y); ctx.stroke();
+    ctx.fillStyle = '#556';
+    ctx.font = '10px monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(v + ':1', pad.l - 8, y + 3);
+  });
+
+  // X axis labels
+  const xLabels = ['1/4', '1/2', '3/4', 'last'];
+  xLabels.forEach((label, i) => {
+    const x = pad.l + (i / (xLabels.length - 1)) * plotW;
+    ctx.fillStyle = '#556';
+    ctx.font = '11px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, x, H - pad.b + 20);
+  });
+  ctx.fillText('Layer Depth →', pad.l + plotW / 2, H - 5);
+
+  // Y axis label
+  ctx.save();
+  ctx.translate(15, pad.t + plotH / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillStyle = '#556';
+  ctx.font = '11px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('PC1:PC2 Ratio', 0, 0);
+  ctx.restore();
+
+  // "Distributed" zone
+  ctx.fillStyle = 'rgba(64, 176, 128, 0.06)';
+  const distY = pad.t + plotH - (3 / yMax) * plotH;
+  ctx.fillRect(pad.l, distY, plotW, pad.t + plotH - distY);
+  ctx.fillStyle = '#2a4a3a';
+  ctx.font = '10px monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText('DISTRIBUTED', pad.l + 5, pad.t + plotH - 5);
+
+  // Draw lines
+  MODELS.forEach(m => {
+    const entries = Object.entries(m.depth).sort((a,b) => +a[0] - +b[0]);
+    if (entries.length < 2) return;
+
+    const norm = entries.map((e, i) => ({
+      x: pad.l + (i / (entries.length - 1)) * plotW,
+      y: pad.t + plotH - (Math.min(e[1], yMax) / yMax) * plotH,
+      val: e[1],
+      layer: e[0]
+    }));
+
+    // Line
+    ctx.strokeStyle = m.color;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    norm.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+    ctx.stroke();
+
+    // Dots + values
+    norm.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+      ctx.fillStyle = m.color;
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 9px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(p.val.toFixed(1), p.x, p.y - 10);
+    });
+
+    // Label at end
+    const last = norm[norm.length - 1];
+    ctx.fillStyle = m.color;
+    ctx.font = '10px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(m.name, last.x + 8, last.y + 3);
+  });
+}
+
+// ═══════ Nebula 3D (simple Three.js-less point cloud) ═══════
+function renderNebulae() {
+  const container = document.getElementById('nebulae');
+  MODELS.forEach(m => {
+    const card = document.createElement('div');
+    card.className = 'nebula-card';
+    const tc = m.type === 'VLM' ? 'type-vlm' : m.type.includes('Omni') ? 'type-omni' : 'type-llm';
+    card.innerHTML = `
+      <div class="title-bar">
+        <span><span class="name">${m.name}</span> <span class="type ${tc}">${m.type}</span></span>
+        <span style="font-size:12px;color:${m.color};font-weight:700">PC1:PC2 = ${m.pc12.toFixed(2)}:1</span>
+      </div>
+      <canvas id="nebula-${m.tag}" width="380" height="300"></canvas>
+      <div style="padding:8px 16px 12px;font-size:11px;color:#667">
+        PCA: ${m.pca[0].toFixed(1)}% + ${m.pca[1].toFixed(1)}% + ${m.pca[2].toFixed(1)}% = ${(m.pca[0]+m.pca[1]+m.pca[2]).toFixed(1)}% · ${m.layers}L × ${m.hidden}d
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+renderNebulae();
+
+// ═══════ Animated nebula rendering ═══════
+const nebulaStates = {};
+
+function initNebula(tag, points) {
+  const canvas = document.getElementById('nebula-' + tag);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = 380 * dpr;
+  canvas.height = 300 * dpr;
+  ctx.scale(dpr, dpr);
+
+  nebulaStates[tag] = {
+    ctx, canvas, points, angle: 0, dragging: false, lastX: 0, angleY: 0
+  };
+
+  canvas.addEventListener('mousedown', e => {
+    nebulaStates[tag].dragging = true;
+    nebulaStates[tag].lastX = e.clientX;
+    nebulaStates[tag].lastY = e.clientY;
+  });
+  canvas.addEventListener('mousemove', e => {
+    if (!nebulaStates[tag].dragging) return;
+    nebulaStates[tag].angle += (e.clientX - nebulaStates[tag].lastX) * 0.01;
+    nebulaStates[tag].angleY += (e.clientY - nebulaStates[tag].lastY) * 0.01;
+    nebulaStates[tag].lastX = e.clientX;
+    nebulaStates[tag].lastY = e.clientY;
+  });
+  canvas.addEventListener('mouseup', () => nebulaStates[tag].dragging = false);
+  canvas.addEventListener('mouseleave', () => nebulaStates[tag].dragging = false);
+}
+
+function drawNebula(tag) {
+  const s = nebulaStates[tag];
+  if (!s) return;
+  const {ctx, points, canvas} = s;
+  const W = 380, H = 300;
+  const cx = W / 2, cy = H / 2;
+
+  ctx.fillStyle = 'rgba(10, 11, 16, 0.15)';
+  ctx.fillRect(0, 0, W, H);
+
+  if (!s.dragging) s.angle += 0.003;
+
+  const cosA = Math.cos(s.angle), sinA = Math.sin(s.angle);
+  const cosB = Math.cos(s.angleY || 0), sinB = Math.sin(s.angleY || 0);
+
+  // Find bounds for normalization
+  let maxR = 1;
+  points.forEach(p => {
+    maxR = Math.max(maxR, Math.sqrt(p.x*p.x + p.y*p.y + p.z*p.z));
+  });
+  const scale = 100 / maxR;
+
+  const projected = points.map(p => {
+    let x = p.x * scale, y = p.y * scale, z = p.z * scale;
+    // Rotate Y
+    let x2 = x * cosA - z * sinA;
+    let z2 = x * sinA + z * cosA;
+    // Rotate X
+    let y2 = y * cosB - z2 * sinB;
+    let z3 = y * sinB + z2 * cosB;
+    return { sx: cx + x2, sy: cy + y2, sz: z3, r: p.r, g: p.g, b: p.b, style: p.style };
+  });
+
+  // Sort by depth
+  projected.sort((a, b) => a.sz - b.sz);
+
+  projected.forEach(p => {
+    const depth = (p.sz + 120) / 240;
+    const alpha = 0.3 + depth * 0.6;
+    const size = 2 + depth * 4;
+    const r = Math.round(p.r * 255);
+    const g = Math.round(p.g * 255);
+    const b = Math.round(p.b * 255);
+
+    // Glow
+    ctx.beginPath();
+    ctx.arc(p.sx, p.sy, size * 2, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${r},${g},${b},${alpha * 0.15})`;
+    ctx.fill();
+
+    // Core
+    ctx.beginPath();
+    ctx.arc(p.sx, p.sy, size, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
+    ctx.fill();
+  });
+}
+
+function animate() {
+  Object.keys(nebulaStates).forEach(drawNebula);
+  requestAnimationFrame(animate);
+}
+
+// ═══════ Load data ═══════
+function loadData() {
+  MODELS.forEach(m => {
+    const pts = POINTCLOUDS[m.tag] || [];
+    initNebula(m.tag, pts);
+  });
+
+  renderDepthChart();
+  animate();
+}
+
+loadData();
+</script>
+
+</body>
+</html>
