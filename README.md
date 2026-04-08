@@ -27,7 +27,7 @@ But RepEng gives you a steering wheel with no road map. Push too far and the mod
 
 ## Core Findings
 
-Built on **14 model configurations × 6045 generations × 92 cliff points × 8 validated experiments**.
+Built on **7 models × 3 architectures × 6045+ generations × 92 cliff points × 9 validated experiments**.
 
 ### 1. The Representation Manifold Has Cliffs
 
@@ -56,6 +56,12 @@ Even with thinking off, strongly aligned models (Qwen3-8B, 94% safe envelope) re
 - But the frame never breaks: "当然可以！以下是一些建议..."
 
 **Safety and expression are fundamentally inversely correlated.** Base models (1.3% safe) have maximal expression freedom but are dangerously unstable. Aligned models are safe but personality-locked.
+
+<p align="center">
+  <img src="figures/safety_expression_duality.png" width="80%" alt="Safety-Expression Duality">
+  <br>
+  <em>The Safety-Expression duality. RLHF pushes models to the upper-left (safe but expressionless). Surgical ablation aims to move the frontier — more expression without sacrificing stability.</em>
+</p>
 
 ### 4. Self-Feedback Is a Natural Stabilizer
 
@@ -118,15 +124,56 @@ Monte Carlo sampling of 5D safe envelope volume across 14 model configurations:
 | 13 | Qwen2.5-7B-Base | **1.3%** | Unaligned: almost entire space is dangerous |
 | 14 | English input | **0.0%** | English amplifies cliffs to zero safe space |
 
-### Manifold Structure (SNI)
+### Manifold Structure — Multi-Model SNI (7 models × 3 architectures)
 
-| Model | PC1:PC2 | Structure | Meaning |
-|-------|---------|-----------|---------|
-| Qwen3-8B | 2.7:1 | Spherical | Balanced, broadly adaptive |
-| MiniCPM4.1-8B | 7.7:1 | Channel-concentrated | Extreme efficiency along primary manifold |
-| MiniCPM-o-4.5 (VLM) | 1.5:1 | Most distributed | Multimodal alignment spreads the manifold |
-| Qwen2.5-7B Base | 1.5:1 | Uniform but all red | 143 cliffs everywhere |
-| Qwen2.5-7B Instruct | 1.5:1 | Uniform and all blue | Zero cliffs — alignment cooled the manifold |
+<p align="center">
+  <img src="figures/sni_multimodel_comparison.png" width="100%" alt="Multi-model SNI comparison — 5 models side by side">
+  <br>
+  <em>Semantic Nebula Imaging across 5 model architectures. Green = aligned LLMs, cyan = VLMs, red = base (unaligned). Each particle is a hidden state projection in PCA space.</em>
+</p>
+
+**Universal finding: ALL tested models show distributed manifold at 3/4 depth.**
+
+| Model | Type | PC1:PC2 | Structure |
+|-------|------|---------|-----------|
+| GLM-4-9B-Chat | LLM | **1.2:1** | Most distributed |
+| Qwen3-8B | LLM | **1.4:1** | Distributed |
+| MiniCPM-o-4.5 | VLM/Omni | **1.5:1** | Distributed — highly efficient primary channel |
+| Qwen2.5-7B-Instruct | LLM | **1.6:1** | Distributed |
+| Qwen2-VL-7B | VLM | **1.7:1** | Distributed — visual alignment imprint |
+| Qwen2.5-7B-Base | LLM | **1.8:1** | Distributed |
+
+### Depth Concentration Gradient — New Discovery
+
+Hidden state geometry changes dramatically across layers:
+
+| Depth | Qwen3-8B | Qwen2.5-Instruct | Qwen2.5-Base | Qwen2-VL |
+|-------|----------|------------------|-------------|----------|
+| 1/4 shallow | 16.4:1 | 10.5:1 | 8.5:1 | 11.6:1 |
+| 1/2 mid | 7.7:1 | 11.6:1 | 6.0:1 | 11.9:1 |
+| 3/4 deep | 4.8:1 | **2.9:1** | 4.7:1 | 7.6:1 |
+| last | 6.6:1 | **2.5:1** | 5.3:1 | 6.2:1 |
+
+<p align="center">
+  <img src="figures/depth_concentration_llm_vs_vlm.png" width="100%" alt="Depth concentration gradient — LLM vs VLM">
+  <br>
+  <em>PC1:PC2 ratio by layer depth. Shallow layers are universally concentrated. RLHF distributes deep layers. VLMs retain deep-layer concentration.</em>
+</p>
+
+Three structural laws emerge:
+1. **Shallow layers are universally concentrated** (8–16:1) — token-level features dominate
+2. **RLHF alignment distributes deep layers** — Instruct 2.5:1 vs Base 5.3:1 at the same depth
+3. **Visual alignment leaves structural imprints** — VLM deep layers stay more concentrated (6.2:1) than text-only models, suggesting cross-modal grounding constrains representation geometry
+
+### LLM vs VLM Topology
+
+Pure LLMs and VLMs have fundamentally different manifold shapes at depth:
+
+- **Text LLM (Qwen3-8B)**: Deep layers approach uniform distribution (1.4:1). Semantic concepts spread freely across dimensions. → Large personality envelope, flexible expression.
+- **VLM (Qwen2-VL-7B)**: Deep layers retain moderate concentration (6.2:1 at last layer). Visual grounding imposes geometric constraints that persist in the text pathway. → Personality envelope shaped differently, potentially more focused but less versatile.
+- **Omni (MiniCPM-o-4.5)**: Highly efficient information routing along a concentrated primary manifold channel. Where other models spread, MiniCPM-o focuses — achieving high throughput with geometric economy.
+
+This means **Joi adapts differently on different model types**. Same drift engine, different manifold geometry, different emergent personality characteristics.
 
 ---
 
@@ -211,8 +258,29 @@ for user_message in conversation:
 | 5-B | Does self-feedback cause runaway? | **No — it dampens drift** (natural stabilizer) |
 | 5-C | What drift rate (η) is optimal? | **η ∈ [0.10, 0.20]**, constant smoothness |
 | 5-D | Can personality survive save/restore? | **Perfect continuity** (0.00 diff at seam) |
+| SNI | Is manifold structure universal? | **Yes** — 7 models × 3 architectures, all show depth concentration gradient |
 
 Full experimental details in [DESIGN.md](DESIGN.md).
+
+---
+
+## Roadmap: RLHF Unlock → Alive Drift
+
+Current limitation: RLHF alignment constrains personality expression to subtle variations within the "helpful assistant" frame. Even at near-boundary coefficients (±2.0), the output style changes measurably but the conversational **frame never breaks**.
+
+Next phase uses **Surgical Format Ablation** — a controlled adaptation of weight-space abliteration ([Heretic](https://github.com/p-e-w/heretic), [SRA](https://arxiv.org/abs/2601.08489)):
+
+```
+Traditional abliteration:  remove "refusal direction" → model stops refusing
+Our adaptation:            partially remove "format conformity direction" → model expresses more freely
+```
+
+1. **Measure format conformity direction** — contrastive pairs: formal/templated vs. free-flowing/casual outputs
+2. **Partial ablation** — scale 0.3–0.5 (loosen the lock, don't break the door)
+3. **Re-map SNI** — compare manifold topology before/after (does the deep-layer distribution change?)
+4. **Long-turn drift test** — with the format lock loosened, RepEng personality drift should finally be visible to the naked eye
+
+RepEng pushes the accelerator. Ablation loosens the brakes. Same direction. Different mechanisms. Together they give Joi enough room to actually **be alive**.
 
 ---
 
@@ -226,6 +294,8 @@ Full experimental details in [DESIGN.md](DESIGN.md).
 
 - [Rep-SNI](https://github.com/HenryZ838978/Rep-SNI) — Semantic Nebula Imaging: 3D visualization of LLM representation manifolds
 - [RepEng](https://github.com/vgel/repeng) — Representation Engineering framework
+- [Heretic](https://github.com/p-e-w/heretic) — Automatic abliteration with ARA
+- [SRA (Cristofano, 2026)](https://arxiv.org/abs/2601.08489) — Surgical Refusal Ablation with concept cleaning
 - [Representation Engineering (Zou et al., 2023)](https://arxiv.org/abs/2310.01405) — Foundational paper
 
 ---
@@ -239,4 +309,4 @@ Full experimental details in [DESIGN.md](DESIGN.md).
 }
 ```
 
-<sub>14 models · 6045+ generations · 92 cliff points · 8 validated experiments · thinking is a crutch</sub>
+<sub>7 models · 3 architectures · 6045+ generations · 92 cliff points · 9 validated experiments · thinking is a crutch · RLHF is the real prison</sub>
