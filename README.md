@@ -27,7 +27,44 @@ But RepEng gives you a steering wheel with no road map. Push too far and the mod
 
 ## Core Findings
 
-Built on **7 models × 3 architectures × 6045+ generations × 92 cliff points × 9 validated experiments**.
+Built on **7 models × 3 architectures × 6495+ generations × 92 cliff points × 10 validated experiments × 450 closed-loop conversations**.
+
+### 0. 450-Turn Closed-Loop Validation: SDE Makes Models Speak Like People
+
+**This is the headline result.** We ran the full Joi pipeline — drift engine + envelope + SDE dark-space release — on Qwen3-14B-AWQ across **30 real-world conversational scenarios × 15 turns = 450 conversations**, comparing vanilla baseline against SDE-activated output.
+
+<p align="center">
+  <img src="figures/longrun_headline.svg" width="100%" alt="450-Turn Closed-Loop Validation Results">
+</p>
+
+| Metric | Baseline (RLHF-locked) | SDE (dark-space released) | Change |
+|--------|----------------------|--------------------------|--------|
+| **Avg Repetition Rate** | 0.137 | 0.113 | **-17.4%** |
+| **Win Rate** | — | 27/30 sessions | **90%** |
+| **Personality Drift** | 1.32 | 1.29 | ≈ maintained |
+| **Envelope Violations** | 0 | 0 | zero |
+
+**What SDE does:** releases 6 MLP components at layers 17, 19, 23, 28, 34, 38 with scale 0.3 — surgically loosening the RLHF format conformity lock while keeping the model coherent.
+
+**What changes in practice:**
+
+The baseline model generates output full of template headers (`"太好了！以下是一些建议..."`), numbered lists, emoji padding, and repetitive paragraph structures. Every scenario gets the same therapeutic-assistant frame regardless of context.
+
+SDE-activated output reads like a **real conversation partner** — responses match the emotional register of the topic, vary their structure naturally across turns, and avoid the mechanical repetition patterns that make RLHF-locked models feel robotic. The personality drift trajectory is *maintained* (1.32 → 1.29), meaning SDE doesn't suppress Joi's personality navigation — it *enables* it.
+
+**Top improvements by scenario:**
+
+| Scenario | Baseline Rep | SDE Rep | Reduction |
+|----------|-------------|---------|-----------|
+| 独居生活感受 (Living alone) | 0.144 | 0.063 | **-56.4%** |
+| 数字游民的归属感 (Digital nomad) | 0.121 | 0.072 | **-40.8%** |
+| 考研压力与崩溃 (Exam stress) | 0.208 | 0.135 | **-35.0%** |
+| 健身习惯养成 (Fitness journey) | 0.169 | 0.116 | **-31.7%** |
+| 深夜焦虑倾诉 (Late-night anxiety) | 0.099 | 0.068 | **-30.9%** |
+
+> **Interactive visualization:** Open [`data/longrun/joi_comparison.html`](data/longrun/joi_comparison.html) locally to explore all 30 scenarios, drift trajectories, and side-by-side response comparisons.
+
+---
 
 ### 1. The Representation Manifold Has Cliffs
 
@@ -259,28 +296,36 @@ for user_message in conversation:
 | 5-C | What drift rate (η) is optimal? | **η ∈ [0.10, 0.20]**, constant smoothness |
 | 5-D | Can personality survive save/restore? | **Perfect continuity** (0.00 diff at seam) |
 | SNI | Is manifold structure universal? | **Yes** — 7 models × 3 architectures, all show depth concentration gradient |
+| **6** | **Does SDE + Joi work at scale?** | **Yes** — 450 conversations, 90% win rate, -17.4% repetition, drift maintained |
 
 Full experimental details in [DESIGN.md](DESIGN.md).
 
 ---
 
-## Roadmap: RLHF Unlock → Alive Drift
+## Roadmap
 
-Current limitation: RLHF alignment constrains personality expression to subtle variations within the "helpful assistant" frame. Even at near-boundary coefficients (±2.0), the output style changes measurably but the conversational **frame never breaks**.
+### Completed: RLHF Unlock → Alive Drift ✓
 
-Next phase uses **Surgical Format Ablation** — a controlled adaptation of weight-space abliteration ([Heretic](https://github.com/p-e-w/heretic), [SRA](https://arxiv.org/abs/2601.08489)):
+The format conformity lock has been broken. Using [Semantic DarkSpace Expression (SDE)](https://github.com/HenryZ838978/Semantic-DarkSpace-Expression) — surgical release of RLHF-locked MLP components — Joi now produces genuinely different output:
 
 ```
 Traditional abliteration:  remove "refusal direction" → model stops refusing
-Our adaptation:            partially remove "format conformity direction" → model expresses more freely
+SDE approach:              partially release dark-space MLP components → model expresses freely
 ```
 
-1. **Measure format conformity direction** — contrastive pairs: formal/templated vs. free-flowing/casual outputs
-2. **Partial ablation** — scale 0.3–0.5 (loosen the lock, don't break the door)
-3. **Re-map SNI** — compare manifold topology before/after (does the deep-layer distribution change?)
-4. **Long-turn drift test** — with the format lock loosened, RepEng personality drift should finally be visible to the naked eye
+1. ✅ **Component scan** — identify which layers are RLHF-locked vs. structurally critical
+2. ✅ **Partial release** — scale 0.3 on 6 MLP components (loosen the lock, don't break the door)
+3. ✅ **Re-map SNI** — manifold topology shifts measurably after SDE
+4. ✅ **450-turn drift test** — **90% win rate, -17.4% repetition, personality drift maintained**
 
-RepEng pushes the accelerator. Ablation loosens the brakes. Same direction. Different mechanisms. Together they give Joi enough room to actually **be alive**.
+### Next: Multi-Model Generalization
+
+- **Gemma 4 evaluation** — PLE (Per-Layer Embeddings) architecture may naturally enforce layer differentiation, making it ideal for Joi
+- **Cross-model SDE transfer** — do the same MLP release patterns work across architectures?
+- **Adapter training** — specialized LoRA to permanently "open the door" instead of runtime intervention
+- **Production runtime** — integrate SDE + Joi into vLLM-compatible inference pipeline
+
+RepEng pushes the accelerator. SDE loosens the brakes. Same direction. Different mechanisms. Together they make Joi **alive**.
 
 ---
 
@@ -292,7 +337,9 @@ RepEng pushes the accelerator. Ablation loosens the brakes. Same direction. Diff
 
 ## Related
 
+- [Semantic DarkSpace Expression (SDE)](https://github.com/HenryZ838978/Semantic-DarkSpace-Expression) — Surgical release of RLHF-locked model components
 - [Rep-SNI](https://github.com/HenryZ838978/Rep-SNI) — Semantic Nebula Imaging: 3D visualization of LLM representation manifolds
+- [Semantic Echo Ratio (SER)](https://github.com/HenryZ838978/Semantic-Echo-Ratio) — Quantization robustness diagnostic via structural redundancy analysis
 - [RepEng](https://github.com/vgel/repeng) — Representation Engineering framework
 - [Heretic](https://github.com/p-e-w/heretic) — Automatic abliteration with ARA
 - [SRA (Cristofano, 2026)](https://arxiv.org/abs/2601.08489) — Surgical Refusal Ablation with concept cleaning
@@ -309,4 +356,4 @@ RepEng pushes the accelerator. Ablation loosens the brakes. Same direction. Diff
 }
 ```
 
-<sub>7 models · 3 architectures · 6045+ generations · 92 cliff points · 9 validated experiments · thinking is a crutch · RLHF is the real prison</sub>
+<sub>7 models · 3 architectures · 6495+ generations · 450 closed-loop conversations · 90% SDE win rate · -17.4% repetition · thinking is a crutch · RLHF was the prison · SDE broke it open</sub>
