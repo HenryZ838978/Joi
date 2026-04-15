@@ -350,10 +350,13 @@ RepEng pushes the accelerator. SDE loosens the brakes. Same direction. Different
 ```bibtex
 @software{joi2026,
   title  = {Joi: Emergent Personality Navigation for LLMs},
-  author = {Jing Zhang},
+  author = {Zhang, Jing},
   url    = {https://github.com/HenryZ838978/Joi},
   year   = {2026}
 }
 ```
+
+> **📄 This work is part of a larger research program.** See the full theory paper:
+> [The Representational Budget: Scale, RL, and Multimodal Alignment Compete for Geometric Potential in Transformers](https://doi.org/10.5281/zenodo.19585083) (DOI: `10.5281/zenodo.19585083`)
 
 <sub>7 models · 3 architectures · 6495+ generations · 450 closed-loop conversations · 90% SDE win rate · -17.4% repetition · thinking is a crutch · RLHF was the prison · SDE broke it open</sub>
